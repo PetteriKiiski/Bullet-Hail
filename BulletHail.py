@@ -43,12 +43,18 @@ class Map:
         self.RectSet.append(pygame.Rect(-1360, 660, 272, 524))####19
         self.RectSet.append(pygame.Rect(2408, -524, 272, 524))####20
         self.RectSet.append(pygame.Rect(2408, 660, 272, 524))#####21
-    def subrect(self, rect):
+    def show_hitboxes(self):
         for maprect in self.RectSet:
+            pygame.draw.rect(canvas, (255, 0, 0), maprect, 1)
+    def subrect(self, rect):
+        colliding = 0
+        for maprect in self.RectSet:
+            if maprect.colliderect(rect) and partialsubrect(maprect, rect):
+                colliding += 1
+                if colliding == 2:
+                    return True
             if subrect(maprect, rect):
-                print("yay")
                 return True
-        print("boo")
         return False
     def move_player(self, x, y):
         for maprect in self.RectSet:
@@ -67,11 +73,14 @@ right = False
 left = False
 up = False
 down = False
-playerect = pygame.Rect(630, 230, 100, 200)
+playerect = pygame.Rect(630, 230, 101, 174)
 def subrect(rect, subrect):
-    if subrect.x > rect.x and subrect.x + subrect.width < rect.x + rect.width and subrect.y > rect.y and subrect.y + subrect.height < rect.y + rect.height:
+    if subrect.left >= rect.left and subrect.right <= rect.right and subrect.top >= rect.top and subrect.bottom <= rect.bottom:
         return True
     return False
+def partialsubrect(rect, subrect):
+    if int(subrect.left >= rect.left) + int(subrect.right <= rect.right) + int(subrect.top >= rect.top) + int(subrect.bottom <= rect.bottom) >= 3:
+        return True
 while True:
     canvas.fill((45, 30, 90))
     world.display()
@@ -121,6 +130,8 @@ while True:
         world.move_player(0, 10)
         if not world.subrect(playerect):
             world.move_player(0, -10)
-
+    if "-h" in sys.argv or "--hitboxes" in sys.argv:
+        pygame.draw.rect(canvas, (0, 255, 0), playerect, 1)
+        world.show_hitboxes()
     pygame.display.update()
     clock.tick(45)
